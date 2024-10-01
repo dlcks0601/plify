@@ -1,10 +1,10 @@
 import React from 'react';
-import TopNav from '../components/common/TopNav';
+import Header from '../components/common/Header';
 
 const Home: React.FC = () => {
     return (
         <div>
-            <TopNav />
+            <Header />
         </div>
     );
 };

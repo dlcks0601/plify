@@ -1,0 +1,44 @@
+/* src/styles/header.css */
+
+/* 전체 네비게이션 바 스타일 */
+#top-navigation {
+    border-bottom: 2px solid #fff;
+    transition: background-color 0.3s ease;
+}
+
+/* 프로필 이미지에 대한 추가 스타일 */
+#profile-avatar {
+    padding: 5px;
+    transition: transform 0.3s ease;
+}
+
+/* 로고 텍스트에 대한 스타일 */
+#logo-text {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* 메뉴 아이콘 스타일 */
+#menu-icon div {
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* hover 시 스타일 변경 */
+#top-navigation:hover {
+    background-color: #333;
+}
+
+#profile-avatar:hover {
+    transform: scale(1.1);
+}
+
+#header.is-not-main .depth1-item.current .depth1-anchor {
+    background-color: #fafafa;
+    color: #000;
+}
+
+#header.is-not-main .depth1-item .depth1-anchor:after {
+    background-color: #fff;
+}
