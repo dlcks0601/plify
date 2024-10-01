@@ -1,10 +1,10 @@
 // 메인 컴포넌트 역할
 // 전체 구조 레이아웃 정의, 다른 컴포넌트들을 임포트
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom'; // Routes와 Route 임포트
 import Home from './pages/Home'; // 홈 컴포넌트 임포트
 import './styles/App.css'; // App 전용 스타일 임포트
+import './styles/header.css';
 
 const App: React.FC = () => {
     return (
