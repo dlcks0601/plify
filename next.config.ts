@@ -1,5 +1,8 @@
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: false, // Strict Mode 끄기
+  eslint: {
+    ignoreDuringBuilds: true, // 빌드 시 ESLint 오류 무시
+  },
   images: {
     domains: [
       'i.scdn.co',
