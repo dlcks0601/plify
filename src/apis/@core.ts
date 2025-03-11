@@ -20,20 +20,22 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        const response = await axiosInstance.post('/auth/refresh');
-        const { accessToken } = response.data;
-        useAuthStore.setState({ accessToken });
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return axiosInstance(originalRequest);
-      } catch (err) {
-        console.error('토큰 재발급 실패:', err);
-        window.location.href = '/auth/login';
-        return Promise.reject(err);
-      }
+
+    if (error.response?.status === 401) {
+      // ✅ 경고 메시지 띄우기
+      alert(
+        'Plify는 안전한 로그인을 위해 한 시간마다 다시 로그인이 필요합니다.'
+      );
+
+      // ✅ 토큰 초기화 (로그아웃 처리)
+      useAuthStore.setState({ accessToken: '' });
+
+      // ✅ 메인 페이지로 이동
+      window.location.href = '/';
+
+      return Promise.reject(error);
     }
+
     return Promise.reject(error);
   }
 );
