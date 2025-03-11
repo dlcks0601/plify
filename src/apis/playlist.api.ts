@@ -8,7 +8,7 @@ export interface PlaylistDBResponse {
 }
 
 export const fetchPlaylistDB = async () => {
-  const response = await fetch('https://localhost:4000/playlists', {
+  const response = await fetch('https://api.plify.store/playlists', {
     method: 'GET',
   });
 
