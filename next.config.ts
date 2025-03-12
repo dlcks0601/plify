@@ -1,7 +1,8 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // Strict Mode 끄기
+  reactStrictMode: false,
   eslint: {
-    ignoreDuringBuilds: true, // 빌드 시 ESLint 오류 무시
+    ignoreDuringBuilds: true,
   },
   images: {
     domains: [
@@ -11,6 +12,21 @@ const nextConfig = {
       'image-cdn-fa.spotifycdn.com',
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            // inline script를 허용하거나 필요한 nonce/해시를 추가할 수 있음
+            value:
+              "default-src 'self'; script-src 'self' https://sdk.scdn.co 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+          },
+        ],
+      },
+    ];
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
