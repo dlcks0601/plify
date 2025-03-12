@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import '../ui/globals.css';
 import Providers from './components/Providers/Providers';
 import ThemeProvider from './components/Providers/ThemeProvider';
@@ -15,6 +16,21 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang='en' suppressHydrationWarning>
+      <head>
+        {/* 먼저 window.onSpotifyWebPlaybackSDKReady 콜백 정의 */}
+        <Script id='spotify-sdk-callback' strategy='beforeInteractive'>
+          {`
+            window.onSpotifyWebPlaybackSDKReady = () => {
+              console.log("Spotify SDK is ready");
+            };
+          `}
+        </Script>
+        {/* Spotify SDK 스크립트 로드 */}
+        <Script
+          src='https://sdk.scdn.co/spotify-player.js'
+          strategy='beforeInteractive'
+        />
+      </head>
       <body className='flex flex-col min-h-screen bg-white dark:bg-black text-black dark:text-white'>
         <ThemeProvider>
           <Providers>
