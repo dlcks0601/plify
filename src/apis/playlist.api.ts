@@ -6,9 +6,21 @@ export interface PlaylistDBResponse {
   pagination: { lastCursor: number | null };
   message: { code: number; text: string };
 }
+// 배포
+// export const fetchPlaylistDB = async () => {
+//   const response = await fetch('https://api.plify.store/playlists', {
+//     method: 'GET',
+//   });
+
+//   if (!response.ok) {
+//     throw new Error(`플레이리스트 API 호출 실패: ${response.status}`);
+//   }
+
+//   return response.json();
+// };
 
 export const fetchPlaylistDB = async () => {
-  const response = await fetch('https://api.plify.store/playlists', {
+  const response = await fetch('https://localhost:4000', {
     method: 'GET',
   });
 
