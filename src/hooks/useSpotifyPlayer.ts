@@ -1,9 +1,28 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { transferPlayback } from '@/apis/spotify.api';
 import useAuthStore from '@/store/authStore';
 import { useDeviceStore } from '@/store/playerStore';
-import { useEffect, useState } from 'react';
+
+const loadSpotifySDK = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    // 이미 Spotify SDK가 로드되어 있다면 바로 resolve
+    if (window.Spotify) {
+      resolve();
+    } else {
+      // SDK가 로드되었을 때 호출될 콜백을 미리 정의
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        resolve();
+      };
+      const script = document.createElement('script');
+      script.src = 'https://sdk.scdn.co/spotify-player.js';
+      script.async = true;
+      script.onerror = reject;
+      document.body.appendChild(script);
+    }
+  });
+};
 
 export const useSpotifyPlayer = () => {
   const [player, setPlayer] = useState<Spotify.Player | null>(null);
@@ -12,100 +31,63 @@ export const useSpotifyPlayer = () => {
 
   useEffect(() => {
     if (!accessToken) return;
+    let spotifyPlayer: Spotify.Player | null = null;
 
-    // 먼저 onSpotifyWebPlaybackSDKReady를 전역에 미리 정의합니다.
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      console.log('🎶 onSpotifyWebPlaybackSDKReady 실행됨');
+    const initializePlayer = async () => {
+      try {
+        await loadSpotifySDK();
+      } catch (error) {
+        console.error('Error loading Spotify SDK:', error);
+        return;
+      }
 
-      const player = new window.Spotify.Player({
+      // Spotify 플레이어 인스턴스 생성
+      spotifyPlayer = new window.Spotify.Player({
         name: 'Plify',
         getOAuthToken: (cb) => cb(accessToken),
         volume: 0.5,
       });
 
-      player.addListener('ready', ({ device_id }) => {
-        console.log('💻 Spotify Device ID:', device_id);
-        if (!device_id) {
-          console.error('❌ Device ID is missing!');
-          return;
-        }
+      // 플레이어 이벤트 리스너 등록
+      spotifyPlayer.addListener('ready', ({ device_id }) => {
+        console.log('💻 Spotify device ID:', device_id);
         setDeviceId(device_id);
         transferPlayback(device_id, accessToken);
       });
 
-      player.addListener('not_ready', ({ device_id }) => {
-        console.log('⚠️ Device has gone offline:', device_id);
+      spotifyPlayer.addListener('not_ready', ({ device_id }) => {
+        console.log('Device has gone offline:', device_id);
       });
 
-      player.addListener('initialization_error', ({ message }) => {
-        console.error('❌ Failed to initialize:', message);
+      spotifyPlayer.addListener('initialization_error', ({ message }) => {
+        console.error('Initialization error:', message);
       });
 
-      player.addListener('authentication_error', ({ message }) => {
-        console.error('❌ Auth error:', message);
+      spotifyPlayer.addListener('authentication_error', ({ message }) => {
+        console.error('Authentication error:', message);
       });
 
-      player.addListener('account_error', ({ message }) => {
-        console.error('❌ Account error:', message);
+      spotifyPlayer.addListener('account_error', ({ message }) => {
+        console.error('Account error:', message);
       });
 
-      const connectPlayer = () => {
-        player.connect().then((success) => {
-          if (success) {
-            console.log(`🎵 Hello ${userInfo.name}, Spotify Player connected.`);
-          } else {
-            console.error(
-              '❌ Spotify player failed to connect. Retrying in 3 seconds...'
-            );
-            setTimeout(connectPlayer, 3000);
-          }
-        });
-      };
+      const connected = await spotifyPlayer.connect();
+      if (connected) {
+        console.log(`🎵 Hello ${userInfo.name}`);
+      }
 
-      connectPlayer();
-      setPlayer(player);
+      setPlayer(spotifyPlayer);
     };
 
-    const loadSpotifySDK = () => {
-      return new Promise<void>((resolve, reject) => {
-        // 스크립트가 이미 존재하면 바로 resolve
-        const existingScript = document.querySelector(
-          'script[src="https://sdk.scdn.co/spotify-player.js"]'
-        );
-        if (existingScript) {
-          console.log('✅ Spotify SDK script already exists.');
-          resolve();
-          return;
-        }
+    initializePlayer();
 
-        const script = document.createElement('script');
-        script.src = 'https://sdk.scdn.co/spotify-player.js';
-        script.async = true;
-        document.body.appendChild(script);
-
-        script.onload = () => {
-          console.log('✅ Spotify SDK loaded successfully.');
-          resolve();
-        };
-
-        script.onerror = () => {
-          console.error('❌ Failed to load Spotify SDK.');
-          reject(new Error('Spotify SDK load error'));
-        };
-      });
-    };
-
-    loadSpotifySDK().catch((error) => {
-      console.error('❌ Spotify SDK failed to load completely:', error);
-    });
-
+    // 컴포넌트 언마운트 시 플레이어 연결 해제
     return () => {
-      if (player) {
-        console.log('🛑 Disconnecting Spotify Player...');
-        player.disconnect();
+      if (spotifyPlayer) {
+        spotifyPlayer.disconnect();
       }
     };
-  }, [accessToken]);
+  }, [accessToken, setDeviceId, userInfo.name]);
 
   return { player, deviceId };
 };
