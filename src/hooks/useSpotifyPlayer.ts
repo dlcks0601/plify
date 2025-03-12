@@ -1,17 +1,26 @@
+// /src/hooks/useSpotifyPlayer.ts
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { transferPlayback } from '@/apis/spotify.api';
 import useAuthStore from '@/store/authStore';
 import { useDeviceStore } from '@/store/playerStore';
+import { getSpotifyPlayer, setSpotifyPlayer } from './SpotifyPlayerSingleton';
 
 export const useSpotifyPlayer = () => {
-  const [player, setPlayer] = useState<Spotify.Player | null>(null);
+  // 전역에 저장된 플레이어 인스턴스를 초기값으로 설정합니다.
+  const [player, setPlayerState] = useState<Spotify.Player | null>(
+    getSpotifyPlayer()
+  );
   const { deviceId, setDeviceId } = useDeviceStore();
   const { accessToken, userInfo } = useAuthStore();
 
   useEffect(() => {
+    // accessToken이 없으면 아무것도 하지 않습니다.
     if (!accessToken) return;
+    // 이미 플레이어가 존재하면 재생성하지 않습니다.
+    if (player) return;
     if (!window.Spotify) {
       console.error('Spotify SDK is not loaded.');
       return;
@@ -49,12 +58,14 @@ export const useSpotifyPlayer = () => {
       }
     });
 
-    setPlayer(spotifyPlayer);
+    // 플레이어 인스턴스를 상태와 전역 변수에 저장합니다.
+    setPlayerState(spotifyPlayer);
+    setSpotifyPlayer(spotifyPlayer);
 
-    return () => {
-      spotifyPlayer.disconnect();
-    };
-  }, [accessToken, setDeviceId, userInfo.name]);
+    // cleanup 함수에서는 disconnect를 호출하지 않습니다.
+    // (플레이어를 앱 전체에서 유지하려면 cleanup에서 disconnect하지 않고,
+    // 로그아웃이나 토큰 변경 시 별도로 관리합니다.)
+  }, [accessToken, player, setDeviceId, userInfo.name]);
 
   return { player, deviceId };
 };
