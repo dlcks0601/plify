@@ -58,3 +58,6 @@ Spotify 계정으로 로그인하면,
 ### 📌 외부 서비스
 
 - **Spotify API**
+
+### 📌 배포 주소
+- **plify.store**
