@@ -22,7 +22,6 @@ export default function Playlist() {
             </button>
           </div>
           <div className='flex flex-col gap-[30px]'>
-            <GenreFilter />
             <PlaylistCard />
           </div>
         </div>

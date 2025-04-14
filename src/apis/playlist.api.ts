@@ -20,7 +20,7 @@ export interface PlaylistDBResponse {
 // };
 
 export const fetchPlaylistDB = async () => {
-  const response = await fetch('https://localhost:4000', {
+  const response = await fetch('https://localhost:4000/playlists', {
     method: 'GET',
   });
 
